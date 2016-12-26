@@ -4,46 +4,56 @@ ini_set('error_reporting', E_ALL);
 
 require 'functions/utils.php';
 require 'functions/f.php';
-
+require 'objects/Identity.php';
 require 'functions/functions.php';
 
-require 'objects/Identity.php';
+//f::define('setTax', curry(function($tax, $product) {
+//  $price = $product['price'];
+//  $temp = f::compose(
+//    f::set('gst', f::tax($tax, $price)),
+//    f::set('exTax', f::price($tax, $price))
+//  );
+//  return $temp($product);
+//}));
+//
+//f::define('inc', f::add(1));
+//f::define('dec', f::subtract(1));
+//
+//f::define('setPrice', function($tax, $product) {
+//  $product['test'] = $product['price'] * $tax;
+//  return $product;
+//});
 
-$nameLens = lens('name');
+//f::define('doStuff', f::compose(
+//  f::trace('stuff'),
+//  f::over(f::lensProp('user'), f::over(f::lensProp('email'), f::upperCase())),
+//  f::over(f::lensProp('products'), f::map(
+//    f::compose(
+//      f::over(f::lensProp('price'), f::inc()),
+//      f::over(f::lensProp('name'), f::capitalize()),
+//      f::setPrice(0.11)
+//    )
+//  ))
+//  // f::over(
+//  //  :lensProp('id'), f::inc()
+//  // ),
+//  // f::over:lensProp('id'), f::multiply(0.11)),
+//  // f::over:lensProp('products'), f::map(
+//  //   f::compose(
+//  //     f::over:lensProp('name'), f::capitalize())
+//  //   )
+//  // ))
+//));
 
-f::define('setTax', curry(function($tax, $product) {
-  $price = $product['price'];
-  return f::compose(
-    f::set('gst', f::tax($tax, $price)),
-    f::set('exTax', f::price($tax, $price))
-  )($product);
-}));
-
-f::define('doStuff', f::compose(
-  f::json('thing'),
-  f::over(
-    lens('id'), f::json('id')
-  )
-  // f::over(lens('id'), f::multiply(0.11))
-  // f::over(lens('products'), f::map(
-  //   f::compose(
-  //     f::over(lens('name'), f::capitalize())
-  //   )
-  // ))
-));
-
-f::define('inc', f::add(1));
-f::define('dec', f::subtract(1));
-
-f::define('decrementQuantity', f::over(
-  lens('products'),
-  f::map(f::inc())
-));
-
-f::define('incrementQuantity', f::over(
-  lens('products'),
-  f::map(f::dec())
-));
+//f::define('decrementQuantity', f::over(
+//  f::lensProp('products'),
+//  f::map(f::inc())
+//));
+//
+//f::define('incrementQuantity', f::over(
+//  f::lensProp('products'),
+//  f::map(f::dec())
+//));
 
 $cart = [
   'id' => 1,
@@ -70,4 +80,32 @@ $cart = [
   ],
 ];
 
-f::doStuff($cart);
+//f::doStuff($cart);
+
+$people = [
+  ['name' => 'simo', 'age' => 33],
+  ['name' => 'chris', 'age' => 30],
+  ['name' => 'foonta', 'age' => 32],
+  ['name' => 'jimbo', 'age' => 33],
+];
+
+//f::define('byAge', f::descend(f::prop('age')));
+//
+//var_dump(
+//  f::sort(f::descend(f::prop('age')), $people)
+//);
+
+var_dump(f::prop('name', ['name' => 'andrew']));
+var_dump(f::assoc('test', 'test', ['name' => 'andrew']));
+
+var_dump(
+  f::over(
+    f::lensPath(['one', 'two']),
+    f::compose(
+      f::trace('assocPath after'),
+      f::upperCase(),
+      f::trace('assocPath before')
+    ),
+    ['one' => ['two' => 'lowercase']]
+  )
+);

@@ -5,13 +5,13 @@ class Identity {
         return new Identity($val);
     }
     public function __construct($val) {
-        $this->val = $val;
+        $this->value = $val;
     }
     public function map($fn) {
-        return new Identity($fn($this->val));
+        return new Identity($fn($this->value));
     }
     public function join() {
-        return $this->val;
+        return $this->value;
     }
     public function chain($fn) {
         return $this->call('join', $this->call('map', $fn));
