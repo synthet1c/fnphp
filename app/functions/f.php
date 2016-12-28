@@ -8,7 +8,15 @@ class f {
   }
 
   public static function define($name, $fn, $doCurry = true) {
-    self::$methods[$name] = $doCurry ? curry($fn) : $fn;
+    if ($doCurry === true) {
+      self::$methods[$name] = curry($fn);
+    }
+    elseif (is_numeric($doCurry)) {
+      self::$methods[$name] = curryN($doCurry, $fn);
+    }
+    else {
+      self::$methods[$name] = $fn;
+    }
   }
   public static function __callStatic($name, $args) {
     if (isset(self::$methods[$name])) {

@@ -28,6 +28,13 @@ f::define('over', function($lens, $f, $x) {
   return $temp($x)->value;
 });
 
+f::define('view', function($lens, $x) {
+  $temp = $lens(function ($y) {
+    return Constant::of($y);
+  });
+  return $temp($x)->value;
+});
+
 f::define('has', function($prop, $obj) {
   return isset($obj[$prop]);
 });
@@ -49,12 +56,12 @@ f::define('assocPath', function($path, $val, $obj) {
   if (count($path) === 0) {
     return $val;
   }
-  $idx = $path[0];
-  if (count($path) > 1) {
-    $nextObj = isset($obj[$idx]) ? $obj[$idx] : [];
+  $key = array_shift($path);
+  if (count($path) > 0) {
+    $nextObj = isset($obj[$key]) ? $obj[$key] : [];
     $val = f::assocPath($path, $val, $nextObj);
   }
-  return f::assoc($idx, $val, $obj);
+  return f::assoc($key, $val, $obj);
 });
 
 f::define('path', curry(function($paths, $obj) {

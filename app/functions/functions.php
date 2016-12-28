@@ -3,7 +3,6 @@
 require 'all.php';
 require 'any.php';
 require 'ap.php';
-require 'assoc.php';
 require 'ascend.php';
 require 'descend.php';
 require 'lens.php';
@@ -58,6 +57,10 @@ f::define('concat', function($first, $second) {
   }
 });
 
+f::define('equals', function($a, $b) {
+  return $a === $b;
+});
+
 f::define('map', function($fn, $obj) {
   if (is_array($obj)) {
     return array_map($fn, $obj);
@@ -76,7 +79,7 @@ f::define('join', function($arr) {
 
 f::define('trace', function($name, $arr) {
   echo 'trace: ' . $name . PHP_EOL;
-  echo var_dump($arr, true);
+  var_dump($arr, true);
   return $arr;
 });
 
@@ -90,6 +93,10 @@ f::define('trace', function($name, $arr) {
 
 f::define('json', function($name, $arr) {
   return json_encode($arr);
+});
+
+f::define('lowerCase', function($str) {
+  return strtolower($str);
 });
 
 f::define('upperCase', function($str) {
