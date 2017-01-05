@@ -3,9 +3,9 @@
 class f {
   public static $methods = [];
 
-  public static function init($methods = []) {
-    self::$methods = array_merge(self::$methods, $methods);
-  }
+//  public static function initialize($methods = []) {
+//    self::$methods = array_merge(self::$methods, $methods);
+//  }
 
   public static function define($name, $fn, $doCurry = true) {
     if ($doCurry === true) {
@@ -29,7 +29,7 @@ class f {
   }
 }
 
-// f::init($methods);
+// f::initialize($methods);
 f::define('pipe', function(/*...$args*/) {
   $fns = func_get_args();
   return function($val) use ($fns) {
@@ -53,6 +53,12 @@ f::define('flip', function($fn) {
   return function(/* args */) use ($fn) {
     $args = array_reverse(func_get_args());
     return call_user_func_array($fn, $args);
+  };
+});
+
+f::define('compose2', function($a, $b) {
+  return function($c) use ($a, $b) {
+    return $a($b($c));
   };
 });
 

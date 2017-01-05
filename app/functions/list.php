@@ -50,19 +50,32 @@ f::define('anyPass', function() {
   throw new Exception('need to define anyPass');
 });
 
-
-f::define('ap', function($applicative, $fn) {
+f::define('ap', function ($applicative, $fn) {
   if (method_exists($applicative, 'ap')) {
     return $applicative::ap($fn);
-  }
-  else if (is_callable($applicative)) {
-    return function($x) use ($applicative, $fn) {
+  } else if (is_callable($applicative)) {
+    return function ($x) use ($applicative, $fn) {
       $temp = $applicative($x);
       return $temp($fn($x));
     };
+  } else {
+    return f::reduce(function ($acc, $f) use ($fn) {
+      return f::concat($acc, f::map($f, $fn));
+    }, [], $applicative);
   }
-  else {
-    return f::reduce(function($acc, $f) use ($fn) {
+});
+
+
+f::define('ap', function ($applicative, $fn) {
+  if (method_exists($applicative, 'ap')) {
+    return $applicative::ap($fn);
+  } else if (is_callable($applicative)) {
+    return function ($x) use ($applicative, $fn) {
+      $temp = $applicative($x);
+      return $temp($fn($x));
+    };
+  } else {
+    return f::reduce(function ($acc, $f) use ($fn) {
       return f::concat($acc, f::map($f, $fn));
     }, [], $applicative);
   }
@@ -235,8 +248,115 @@ f::define('head', function($list) {
   return $list[0];
 });
 
+f::define('indexBy', function($fn, $list) {
+  throw new  Exception('need to define f::indexBy');
+});
 
-f::define('range', function($start, $end) {
+f::define('indexOf', function($x, $list) {
+  return array_search($x, $list);
+});
+
+f::define('init', function($list) {
+  return array_slice($list, 0, count($list) - 1);
+});
+
+f::define('insert', function($index, $item, $list) {
+  array_splice($list, $index, 0, [$item]);
+  return $list;
+});
+
+f::define('insertAll', function($index, $items, $list) {
+  array_splice($list, $index, 0, $items);
+  return $list;
+});
+
+f::define('intersperse', function($x, $xs) {
+  $ret = [];
+  $ii = 0;
+  $ll = count($xs);
+  while ($ii < $ll) {
+    array_push($ret, $xs[$ii], $x);
+    $ii += 1;
+  }
+  return $ret;
+});
+
+f::define('into', function() {
+  throw new Exception('need to define f::into');
+});
+
+f::define('join', function($glue, $list) {
+  return implode($glue, $list);
+});
+
+f::define('last', function($list) {
+  return $list[count($list) - 1];
+});
+
+f::define('lastIndexOf', function($x, $xs) {
+  return array_search($x, array_reverse($xs));
+});
+
+f::define('length', function($list) {
+  return count($list);
+});
+
+f::define('mapAccum', function($fn, $acc, $list) {
+  $ii = 0;
+  $ll = count($list);
+  $ret = [];
+  $tuple = [$acc];
+  while ($ii < $ll) {
+    $tuple = $fn($tuple[0], $list[$ii]);
+    $ret[$ii] = $tuple[1];
+    $ii += 1;
+  }
+  return [$tuple[0], $ret];
+});
+
+f::define('mapAccumRight', function($fn, $acc, $list) {
+  $ii = count($list) - 1;
+  $ret = [];
+  $tuple = [$acc];
+  while ($ii >= 0) {
+    $tuple = $fn($tuple[0], $list[$ii]);
+    $ret[$ii] = $tuple[1];
+    $ii -= 1;
+  }
+  return [$tuple[0], $ret];
+});
+
+f::define('mergeAll', function($list) {
+  return array_merge(func_get_args());
+});
+
+f::define('mergeWithKey', function($fn, $list) {
+  $ret = [];
+  forEach($list as $key => $value) {
+    if (array_search($list, $value)) {
+      $ret[$value] = array_search($k, $r);
+    }
+  }
+});
+
+f::define('none', f::compose(f::not(),f::any()));
+
+f::define('nth', function($ii, $xs) {
+  if ($ii < 0) {
+    return array_reverse($xs)[($ii * -1) - 1];
+  }
+  return $xs[$ii];
+});
+
+f::define('pair', function($a, $b) {
+  return [$a, $b];
+});
+
+f::define('reverse', function($list) {
+  return array_reverse($list);
+});
+
+f::define('range', function ($start, $end) {
   $ret = [];
   while ($start < $end) {
     $ret[] = $start;
@@ -245,15 +365,15 @@ f::define('range', function($start, $end) {
   return $ret;
 });
 
-f::define('reject', function($pred, $filterable) {
+f::define('reject', function ($pred, $filterable) {
   return f::filter(f::compliment($pred), $filterable);
 });
 
-f::define('remove', function($start, $count, $list) {
+f::define('remove', function ($start, $count, $list) {
   return array_splice($list, $start, $count);
 });
 
-f::define('repeat', function($x, $count) {
+f::define('repeat', function ($x, $count) {
   $ret = [];
   while ($count > 0) {
     $ret[] = $x;
@@ -262,11 +382,11 @@ f::define('repeat', function($x, $count) {
   return $ret;
 });
 
-f::define('reverse', function($list) {
+f::define('reverse', function ($list) {
   return array_reverse($list);
 });
 
-f::define('scan', function($fn, $acc, $list) {
+f::define('scan', function ($fn, $acc, $list) {
   $ii = 0;
   $ll = count($list);
   $ret = [];
@@ -278,7 +398,7 @@ f::define('scan', function($fn, $acc, $list) {
   return $ret;
 });
 
-f::define('sequence', function($of, $traversable) {
+f::define('sequence', function ($of, $traversable) {
   if (method_exists($traversable, 'sequence')) {
     return $traversable->sequence(f::of());
   }
@@ -288,7 +408,7 @@ f::define('sequence', function($of, $traversable) {
   return f::reduceRight($reducer, f::of([]), $traversable);
 });
 
-f::define('asArray', function($fn, $list) {
+f::define('asArray', function ($fn, $list) {
   if (is_string($list)) {
     $res = $fn(str_split($list));
     return implode('', $res);
@@ -296,8 +416,8 @@ f::define('asArray', function($fn, $list) {
   return $fn($list);
 });
 
-f::define('slice', function($start, $end, $list) {
-  $slice = curry(function($start, $end, $list) {
+f::define('slice', function ($start, $end, $list) {
+  $slice = curry(function ($start, $end, $list) {
     $length = abs($end) - abs($start);
     return f::asArray(function ($list) use ($start, $length) {
       return array_slice($list, $start, $length);
@@ -308,7 +428,7 @@ f::define('slice', function($start, $end, $list) {
     : $slice($start, count($list), $list);
 });
 
-f::define('take', function($count, $list) {
+f::define('take', function ($count, $list) {
   return f::slice(0, $count, $list);
 });
 
@@ -328,14 +448,14 @@ f::define('takeWhile', function ($predicate, $list) {
   return f::take($ii, $list);
 });
 
-f::define('splitAt', function($index, $list) {
+f::define('splitAt', function ($index, $list) {
   return [
     f::slice(0, $index, $list),
     f::slice($index, count($list), $list)
   ];
 });
 
-f::define('splitEvery', function($every, $list) {
+f::define('splitEvery', function ($every, $list) {
   $ret = [];
   $ii = 0;
   $ll = is_string($list) ? strlen($list) : count($list);
@@ -346,7 +466,7 @@ f::define('splitEvery', function($every, $list) {
   return $ret;
 });
 
-f::define('splitWhen', function($predicate, $list) {
+f::define('splitWhen', function ($predicate, $list) {
   $ii = 0;
   $ll = count($list);
   while ($ii < $ll) {

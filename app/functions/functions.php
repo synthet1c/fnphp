@@ -40,6 +40,8 @@ f::define('add', function($first, $second) {
   return $first + $second;
 });
 
+f::define('sum', f::reduce(f::add(), 0));
+
 f::define('subtract', function($first, $second) {
   return $first - $second;
 });
