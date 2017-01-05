@@ -124,7 +124,7 @@ var_dump(
 );
 
 f::define('toObject', function($arr) {
-  return (object)$arr;
+  return (object) $arr;
 });
 
 f::define('idTimesTwo', f::compose(
@@ -133,5 +133,5 @@ f::define('idTimesTwo', f::compose(
 ));
 
 var_dump(
-  f::idTimesTwo(['id' => 3])
+  f::takeLast(3, [1, 2, 3, 2, 1, 0])
 );

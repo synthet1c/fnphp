@@ -103,8 +103,23 @@ f::define('upperCase', function($str) {
   return strtoupper($str);
 });
 
-f::define('reverse', function($str) {
-  return implode('', array_reverse(str_split($str)));
+f::define('reverse', function($xs) {
+  if (is_string($xs)) {
+    return implode('', array_reverse(str_split($xs)));
+  }
+  return array_reverse($xs);
 });
+
+f::define('compliment', function($f) {
+  return curryN(1, function($x) use ($f) {
+    return !call_user_func_array($f, func_get_args());
+  });
+});
+
+f::define('isEven', function($x) {
+  return $x % 2 === 0;
+});
+
+f::define('isOdd', f::compliment(f::isEven()));
 
 f::define('test', f::add(1));

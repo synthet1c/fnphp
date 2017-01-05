@@ -235,6 +235,131 @@ f::define('head', function($list) {
   return $list[0];
 });
 
+
+f::define('range', function($start, $end) {
+  $ret = [];
+  while ($start < $end) {
+    $ret[] = $start;
+    $start += 1;
+  }
+  return $ret;
+});
+
+f::define('reject', function($pred, $filterable) {
+  return f::filter(f::compliment($pred), $filterable);
+});
+
+f::define('remove', function($start, $count, $list) {
+  return array_splice($list, $start, $count);
+});
+
+f::define('repeat', function($x, $count) {
+  $ret = [];
+  while ($count > 0) {
+    $ret[] = $x;
+    $count -= 1;
+  }
+  return $ret;
+});
+
+f::define('reverse', function($list) {
+  return array_reverse($list);
+});
+
+f::define('scan', function($fn, $acc, $list) {
+  $ii = 0;
+  $ll = count($list);
+  $ret = [];
+  while ($ii < $ll) {
+    $acc = $fn($acc, $list[$ii]);
+    $ret[$ii + 1] = $acc;
+    $ii += 1;
+  }
+  return $ret;
+});
+
+f::define('sequence', function($of, $traversable) {
+  if (method_exists($traversable, 'sequence')) {
+    return $traversable->sequence(f::of());
+  }
+  $reducer = function ($x, $acc) {
+    return f::ap(f::map(f::prepend(), $x), $acc);
+  };
+  return f::reduceRight($reducer, f::of([]), $traversable);
+});
+
+f::define('asArray', function($fn, $list) {
+  if (is_string($list)) {
+    $res = $fn(str_split($list));
+    return implode('', $res);
+  }
+  return $fn($list);
+});
+
+f::define('slice', function($start, $end, $list) {
+  $slice = curry(function($start, $end, $list) {
+    $length = abs($end) - abs($start);
+    return f::asArray(function ($list) use ($start, $length) {
+      return array_slice($list, $start, $length);
+    }, $list);
+  });
+  return $end
+    ? $slice($start, $end, $list)
+    : $slice($start, count($list), $list);
+});
+
+f::define('take', function($count, $list) {
+  return f::slice(0, $count, $list);
+});
+
+f::define('takeLast', function ($count, $list) {
+  return f::slice($count * -1, null, $list);
+});
+
+f::define('takeWhile', function ($predicate, $list) {
+  $ii = 0;
+  $ll = count($list);
+  while ($ii < $ll) {
+    if ($predicate($list[$ii])) {
+      break;
+    }
+    $ii += 1;
+  }
+  return f::take($ii, $list);
+});
+
+f::define('splitAt', function($index, $list) {
+  return [
+    f::slice(0, $index, $list),
+    f::slice($index, count($list), $list)
+  ];
+});
+
+f::define('splitEvery', function($every, $list) {
+  $ret = [];
+  $ii = 0;
+  $ll = is_string($list) ? strlen($list) : count($list);
+  while ($ii < $ll) {
+    $ret[] = f::slice($ii, $ii + $every, $list);
+    $ii += $every;
+  }
+  return $ret;
+});
+
+f::define('splitWhen', function($predicate, $list) {
+  $ii = 0;
+  $ll = count($list);
+  while ($ii < $ll) {
+    if ($predicate($list[$ii])) {
+      break;
+    }
+    $ii += 1;
+  }
+  return f::splitAt($ii, $list);
+});
+
+f::define('tail', f::slice(1, null));
+
 /**
  * @method f::reduce()
  * @example f::reduce(function($acc, $x){ return $x}, [])([0, 1, 2])
