@@ -4,10 +4,12 @@ ini_set('error_reporting', E_ALL);
 
 require 'functions/utils.php';
 require 'functions/f.php';
+require 'functions/logic.php';
 require 'functions/list.php';
 require 'objects/Identity.php';
 require 'objects/Constant.php';
 require 'functions/functions.php';
+require 'functions/function.php';
 
 //f::define('setTax', curry(function($tax, $product) {
 //  $price = $product['price'];
@@ -127,11 +129,13 @@ f::define('toObject', function($arr) {
   return (object)$arr;
 });
 
-f::define('idTimesTwo', f::compose(
-  f::toObject(),
-  f::over(f::lensProp('id'), f::multiply(2))
-));
+$digits = ['1', '2', '3', '4'];
+$appender = function($a, $b) { return [$a . $b, $a . $b]; };
+
+f::define('madd3', f::liftN(3, function() {
+  return f::sum(func_get_args());
+}));
 
 var_dump(
-  f::idTimesTwo(['id' => 3])
+  f::nth(-3, [1, 2, 3, 4, 5])
 );

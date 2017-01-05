@@ -7,6 +7,7 @@ f::define('any', function($fn, $list) {
     if ($fn($list[$ii])) {
       return true;
     }
+    $ii += 1;
   }
   return false;
 });

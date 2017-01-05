@@ -51,24 +51,6 @@ f::define('anyPass', function() {
 });
 
 
-f::define('ap', function($applicative, $fn) {
-  if (method_exists($applicative, 'ap')) {
-    return $applicative::ap($fn);
-  }
-  else if (is_callable($applicative)) {
-    return function($x) use ($applicative, $fn) {
-      $temp = $applicative($x);
-      return $temp($fn($x));
-    };
-  }
-  else {
-    return f::reduce(function($acc, $f) use ($fn) {
-      return f::concat($acc, f::map($f, $fn));
-    }, [], $applicative);
-  }
-});
-
-
 f::define('aperture', function($length, $list) {
   $ret = [];
   $ii = 0;
@@ -233,6 +215,114 @@ f::define('groupWith', function($fn, $list) {
 
 f::define('head', function($list) {
   return $list[0];
+});
+
+f::define('indexBy', function($fn, $list) {
+  throw new  Exception('need to define f::indexBy');
+});
+
+f::define('indexOf', function($x, $list) {
+  return array_search($x, $list);
+});
+
+f::define('init', function($list) {
+  return array_slice($list, 0, count($list) - 1);
+});
+
+f::define('insert', function($index, $item, $list) {
+  array_splice($list, $index, 0, [$item]);
+  return $list;
+});
+
+f::define('insertAll', function($index, $items, $list) {
+  array_splice($list, $index, 0, $items);
+  return $list;
+});
+
+f::define('intersperse', function($x, $xs) {
+  $ret = [];
+  $ii = 0;
+  $ll = count($xs);
+  while ($ii < $ll) {
+    array_push($ret, $xs[$ii], $x);
+    $ii += 1;
+  }
+  return $ret;
+});
+
+f::define('into', function() {
+  throw new Exception('need to define f::into');
+});
+
+f::define('join', function($glue, $list) {
+  return implode($glue, $list);
+});
+
+f::define('last', function($list) {
+  return $list[count($list) - 1];
+});
+
+f::define('lastIndexOf', function($x, $xs) {
+  return array_search($x, array_reverse($xs));
+});
+
+f::define('length', function($list) {
+  return count($list);
+});
+
+f::define('mapAccum', function($fn, $acc, $list) {
+  $ii = 0;
+  $ll = count($list);
+  $ret = [];
+  $tuple = [$acc];
+  while ($ii < $ll) {
+    $tuple = $fn($tuple[0], $list[$ii]);
+    $ret[$ii] = $tuple[1];
+    $ii += 1;
+  }
+  return [$tuple[0], $ret];
+});
+
+f::define('mapAccumRight', function($fn, $acc, $list) {
+  $ii = count($list) - 1;
+  $ret = [];
+  $tuple = [$acc];
+  while ($ii >= 0) {
+    $tuple = $fn($tuple[0], $list[$ii]);
+    $ret[$ii] = $tuple[1];
+    $ii -= 1;
+  }
+  return [$tuple[0], $ret];
+});
+
+f::define('mergeAll', function($list) {
+  return array_merge(func_get_args());
+});
+
+f::define('mergeWithKey', function($fn, $list) {
+  $ret = [];
+  forEach($list as $key => $value) {
+    if (array_search($list, $value)) {
+      $ret[$value] = array_search($k, $r);
+    }
+  }
+});
+
+f::define('none', f::compose(f::not(),f::any()));
+
+f::define('nth', function($ii, $xs) {
+  if ($ii < 0) {
+    return array_reverse($xs)[($ii * -1) - 1];
+  }
+  return $xs[$ii];
+});
+
+f::define('pair', function($a, $b) {
+  return [$a, $b];
+});
+
+f::define('reverse', function($list) {
+  return array_reverse($list);
 });
 
 /**
