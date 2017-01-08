@@ -17,6 +17,11 @@ f::define('ap', function($applicative, $fn) {
   }
 });
 
+f::define('arity', function($n, $fn) {
+  return curryN($n, function() use ($n, $fn) {
+    return call_user_func_array($fn, array_slice(func_get_args(), 0, $n));
+  });
+});
 
 f::define('lift', function($fn) {
   $ref = new ReflectionFunction($fn);
