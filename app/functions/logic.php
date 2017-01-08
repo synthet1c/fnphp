@@ -23,3 +23,7 @@ f::define('lessThanEqual', function($a, $b) {
 f::define('greaterThanEqual', function($a, $b) {
   return $b >= $a;
 });
+
+f::define('propSatisfies', function($fn, $prop, $object) {
+  return $fn($object[$prop]);
+});
