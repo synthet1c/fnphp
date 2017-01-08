@@ -21,3 +21,7 @@ class Identity {
         return call_user_func_array([__CLASS__, $method], $args);
     }
 }
+
+f::define('Identity', function($x) {
+  return Identity::of($x);
+});

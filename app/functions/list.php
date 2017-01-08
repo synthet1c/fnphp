@@ -22,18 +22,6 @@ f::define('allPass', function() {
 });
 
 
-f::define('always', function($val) {
-  return function() use ($val) {
-    return $val;
-  };
-});
-
-
-f::define('and', function($a, $b) {
-  return $a && $b;
-});
-
-
 f::define('any', function($predicate, $list) {
   $ii = 0;
   $ll = count($list);
@@ -66,22 +54,6 @@ f::define('ap', function ($applicative, $fn) {
 });
 
 
-f::define('ap', function ($applicative, $fn) {
-  if (method_exists($applicative, 'ap')) {
-    return $applicative::ap($fn);
-  } else if (is_callable($applicative)) {
-    return function ($x) use ($applicative, $fn) {
-      $temp = $applicative($x);
-      return $temp($fn($x));
-    };
-  } else {
-    return f::reduce(function ($acc, $f) use ($fn) {
-      return f::concat($acc, f::map($f, $fn));
-    }, [], $applicative);
-  }
-});
-
-
 f::define('aperture', function($length, $list) {
   $ret = [];
   $ii = 0;
@@ -92,6 +64,7 @@ f::define('aperture', function($length, $list) {
   }
   return $ret;
 });
+
 
 f::define('append', function($a, $list) {
   array_push($list, $a);
@@ -108,6 +81,7 @@ f::define('applySpec', function() {
 
 f::define('assoc', function($prop, $val, $obj) {
   if (is_object($obj)) {
+    $obj = clone($obj);
     $obj->$prop = $val;
   }
   else {
@@ -173,7 +147,7 @@ f::define('findIndex', function($predicate, $list) {
   $ii = 0;
   $ll = count($list);
   while ($ii < $ll) {
-    if (!$predicate($list[$ii])) {
+    if ($predicate($list[$ii])) {
       break;
     }
     $ii += 1;
@@ -245,7 +219,9 @@ f::define('groupWith', function($fn, $list) {
 });
 
 f::define('head', function($list) {
-  return $list[0];
+  return f::asArray(function($list) {
+    return $list[0];
+  }, $list);
 });
 
 f::define('indexBy', function($fn, $list) {
@@ -365,8 +341,8 @@ f::define('range', function ($start, $end) {
   return $ret;
 });
 
-f::define('reject', function ($pred, $filterable) {
-  return f::filter(f::compliment($pred), $filterable);
+f::define('reject', function ($predicate, $filterable) {
+  return f::filter(f::compliment($predicate), $filterable);
 });
 
 f::define('remove', function ($start, $count, $list) {
@@ -437,15 +413,8 @@ f::define('takeLast', function ($count, $list) {
 });
 
 f::define('takeWhile', function ($predicate, $list) {
-  $ii = 0;
-  $ll = count($list);
-  while ($ii < $ll) {
-    if ($predicate($list[$ii])) {
-      break;
-    }
-    $ii += 1;
-  }
-  return f::take($ii, $list);
+  $ii = f::findIndex($predicate, $list);
+  return f::take($ii + 1, $list);
 });
 
 f::define('splitAt', function ($index, $list) {
@@ -467,18 +436,66 @@ f::define('splitEvery', function ($every, $list) {
 });
 
 f::define('splitWhen', function ($predicate, $list) {
-  $ii = 0;
-  $ll = count($list);
-  while ($ii < $ll) {
-    if ($predicate($list[$ii])) {
-      break;
-    }
-    $ii += 1;
-  }
+  $ii = f::findIndex($predicate, $list);
   return f::splitAt($ii, $list);
 });
 
 f::define('tail', f::slice(1, null));
+
+f::define('take', function($count, $list) {
+  return f::slice($count, null, $list);
+});
+
+f::define('takeLast', function($count, $list) {
+  return f::slice($count * -1, null, $list);
+});
+
+f::define('takeLastWhile', function($predicate, $list) {
+  $ii = f::findLastIndex($predicate, $list);
+  return f::slice($ii * -1, null, $list);
+});
+
+f::define('takeWhile', function($predicate, $list) {
+  $ii = f::findIndex($predicate, $list);
+  return f::slice($ii, null, $list);
+});
+
+f::define('times', function($fn, $n) {
+  $ii = 0;
+  $list = [];
+  if ($n < 0 || !is_numeric($n)) {
+    throw new Exception('$n must be a non-negative number');
+  }
+  while ($ii < $n) {
+    $list[$ii] = $fn($ii);
+    $ii += 1;
+  }
+  return $list;
+});
+
+f::define('transduce', function() {
+  throw new Exception('need to define f::transduce');
+});
+
+f::define('transpose', function($xs) {
+  $pairs = func_get_args();
+  $ii = 0;
+  $ll = count($pairs);
+  $left = [];
+  $right = [];
+  while ($ii < $ll) {
+    $left[$ii] = $xs[$ii][0];
+    $right[$ii] = $xs[$ii][1];
+  }
+  return [
+    $left,
+    $right,
+  ];
+});
+
+f::define('traverse', function($of, $fn, $traversable) {
+  return f::sequence($of, f::map($fn, $traversable));
+});
 
 /**
  * @method f::reduce()

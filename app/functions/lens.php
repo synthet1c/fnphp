@@ -22,8 +22,21 @@ f::define('lensPath', function($path) {
 });
 
 f::define('over', function($lens, $f, $x) {
+  if (method_exists($x, 'over')) {
+    return $x->over($lens, $f);
+  }
   $temp = $lens(function ($y) use ($f) {
-    return Identity::of($f($y));
+    return Maybe::of($y)->map($f);
+  });
+  return $temp($x)->value;
+});
+
+f::define('maybeOver', function($lens, $f, $x) {
+  if (method_exists($x, 'over')) {
+    return $x->over($lens, $f);
+  }
+  $temp = $lens(function ($y) use ($f) {
+    return Maybe::of($y)->map($f);
   });
   return $temp($x)->value;
 });
@@ -58,7 +71,12 @@ f::define('assocPath', function($path, $val, $obj) {
   }
   $key = array_shift($path);
   if (count($path) > 0) {
-    $nextObj = isset($obj[$key]) ? $obj[$key] : [];
+    if (is_array($obj)) {
+      $nextObj = isset($obj[$key]) ? $obj[$key] : [];
+    }
+    else {
+      $nextObj = isset($obj->$key) ? $obj->$key : (object)[];
+    }
     $val = f::assocPath($path, $val, $nextObj);
   }
   return f::assoc($key, $val, $obj);
@@ -71,7 +89,13 @@ f::define('path', curry(function($paths, $obj) {
     if ($val == null) {
       return null;
     }
-    $val = $val[$paths[$idx]];
+    if (is_object($val)) {
+      $key = $paths[$idx];
+      $val = $val->$key;
+    }
+    else {
+      $val = $val[$paths[$idx]];
+    }
     $idx += 1;
   }
   return $val;
